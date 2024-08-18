@@ -5,7 +5,7 @@ pipeline{
         stage("Code"){
             steps{
                 echo "Cloning the code"
-                git url:"https://github.com/sajidansari29/node-todo-cicd.git”, branch:”master”
+                git url:"https://github.com/sajidansari29/node-todo-cicd.git”, branch:"master"
             }
             
         }
@@ -24,7 +24,7 @@ pipeline{
                 withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass", usernameVariable:"dockerHubUser")]){
                 sh "docker tag my-todo-app ${env.dockerHubUser}/my-todo-app:latest"
                 sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/my-todo-app:latest”
+                sh "docker push ${env.dockerHubUser}/my-todo-app:latest"
                 
                 }
             }
@@ -33,7 +33,7 @@ pipeline{
         stage("Deploy"){
             steps{
                 echo "Deploying the code"
-                sh “docker compose down && docker compose up -d"
+                sh "docker compose down && docker compose up -d"
                 
             }
         }
