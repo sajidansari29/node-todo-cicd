@@ -1,40 +1,42 @@
-pipeline {
-    agent { label "dev-server"}
+pipeline{
+    agent any
     
-    stages {
+    stages{
+        stage("Code"){
+            steps{
+                echo "Cloning the code"
+                git url:"https://github.com/sajidansari29/node-todo-cicd.git”, branch:”master”
+            }
+            
+        }
         
-        stage("code"){
+        stage("Build"){
             steps{
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
-                echo 'bhaiyya code clone ho gaya'
+                echo "building the code"
+                sh " docker build . -t todo-node-app"
+                
             }
+            
         }
-        stage("build and test"){
+        stage("Push to Docker"){
             steps{
-                sh "docker build -t node-app-test-new ."
-                echo 'code build bhi ho gaya'
-            }
-        }
-        stage("scan image"){
-            steps{
-                echo 'image scanning ho gayi'
-            }
-        }
-        stage("push"){
-            steps{
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
+                echo "Pushing the code to docker Hub"
+                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass", usernameVariable:"dockerHubUser")]){
+                sh "docker tag my-todo-app ${env.dockerHubUser}/my-todo-app:latest"
                 sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker tag node-app-test-new:latest ${env.dockerHubUser}/node-app-test-new:latest"
-                sh "docker push ${env.dockerHubUser}/node-app-test-new:latest"
-                echo 'image push ho gaya'
+                sh "docker push ${env.dockerHubUser}/my-todo-app:latest”
+                
                 }
             }
+            
         }
-        stage("deploy"){
+        stage("Deploy"){
             steps{
-                sh "docker-compose down && docker-compose up -d"
-                echo 'deployment ho gayi'
+                echo "Deploying the code"
+                sh “docker compose down && docker compose up -d"
+                
             }
         }
+        
     }
 }
